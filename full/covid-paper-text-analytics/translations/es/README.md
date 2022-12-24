@@ -115,21 +115,21 @@ Sepsis (Diagnosis)
 ...
 ``` 
 
-## Reto 4: Procesar resúmenes
+## Paso 4: Procesar resúmenes
 
-Now it's time to go big and process abstracts at scale! However, because we are limited in time, and we do not want to waste your cloud resources, we will process only a limited number of random abstracts (say, 200-500). 
+¡Ahora es el momento de ir a lo grande y procesar resúmenes a escala! Sin embargo, debido a que tenemos un tiempo limitado y no queremos desperdiciar tus recursos en la nube, procesaremos solo una cantidad limitada de resúmenes aleatorios (digamos, 200-500).
 
-Keep in mind that some abstracts are not present (they will have 'NaN' ) in the corresponding **abstract** field.
+Ten en cuenta que algunos resúmenes no están presentes (tendrán 'NaN') en el campo **abstract** correspondiente.
 
-> It is important to select abstracts randomly, because later on we will want to explore the change is treatment tactics over time, and we need to have uniform paper representation across all time period. Alternatively, to further minimize time/spend, you can select a time sub-interval (say, only year 2020), and then process random papers in that interval. 
+> Es importante seleccionar los resúmenes al azar, porque más adelante queremos explorar el cambio en las ténicas de tratamiento a lo largo del tiempo, y necesitamos tener una representación de artículos uniforme en todo el período de tiempo. Alternativamente, para minimizar aún más el tiempo/gasto, puede seleccionar un subintervalo de tiempo (digamos, solo el año 2020) y luego procesar documentos aleatorios en ese intervalo.
 
-Spend some time thinking about the way you will store the result of processing. You can add processing results as additional columns to the DataFrame, or you can use separate list/dictionary.
+Didica un tiempo a pensar en la forma en que almacenará el resultado del procesamiento. Puedes agregar resultados de procesamiento como columnas adicionales al DataFrame, o puedes usar una lista/diccionario por separado.
 
-> You want to make sure that for each paper you keep essential info such as title and publication time, together with all entities and relations.
+> Quieres asegurarte de que para cada artículo se mantenga información esencial, como el título y la fecha de publicación, junto con todas las entidades y relaciones.
 
-Processing can take quite a long time. You may start (and proceed until the end of the workshop) with small sample size (~50 papers) to make sure your code works and your data structure is right, and then increase the sample size to 200-500 towards the end to obtain the results. 
+El procesamiento puede llevar bastante tiempo. Puedes comenzar (y continuar hasta el final del taller) con un tamaño de muestra pequeño (~50 documentos) para asegurarte de que tu código funciona y que tu estructura de datos sea correcta, y luego aumenta el tamaño de muestra a 200-500 hacia el final para obtener Los resultados.
 
-> If you are really short on time, you can skip this step and load the results of processing random 500 papers from `data\processed.pkl.bz2` file using the following code:
+> Si realmente tienes poco tiempo, puedes omitir este paso y cargar los resultados del procesamiento de 500 documentos aleatorios del archivo `data\processed.pkl.bz2` utilizando el siguiente código:
 
 ```python
 import pickle, bz2
@@ -138,9 +138,9 @@ with bz2.BZ2File('data\processed.pkl.bz2','r') as f:
     store = pickle.load(f)
 ```
 
-## Milestone 5: Get Top Symptoms, Medications and Diagnoses
+## Paso 5: Obtener los síntomas, medicamentos y diagnósticos más repetidos
 
-Now it is time to process our raw data and get some insights! Let's start by grouping entities together by their ontology ID (UMLS ID) and seeing which are the top mentions in different categories. As a result, you should build a table similar to the following:
+¡Ahora es el momento de procesar nuestros datos y obtener algunas ideas! Comencemos por agrupar entidades por su ID de ontología (ID de UMLS) y ver cuáles son las principales menciones en diferentes categorías. Como resultado, debe crear una tabla similar a la siguiente:
 
 | UMLS ID | Name | Category | Count |
 |---------|------|----------|-------|
@@ -149,58 +149,58 @@ Now it is time to process our raw data and get some insights! Let's start by gro
 | C0939237 | lopinavir + ritonavir | MedicationName | 28 |
 | ... | ... | ... | ...
 
-You can also build a word cloud of diagnoses, symptoms or medications:
+También puede crear una nube de palabras de diagnósticos, síntomas o medicamentos.:
 
-![word cloud of diagnoses](images/wordcloud.png)
+![word cloud of diagnoses](../../images/wordcloud.png)
 
-## Milestone 6: Visualize Change in Treatment Strategies
+## Paso 6: Visualizar el cambio en las estrategias de tratamiento
 
-In addition to calculating the total count of mentions, you can see how they are distributed by month, and thus detect changes in treatment strategies. Select top medications/strategies and compute the distribution of their mentions by months (or weeks). First, get the list of top-5 UMLS IDs for medications and medication classes (AKA treatment strategies), and then use only those classes to plot graphs similar to the following:
+Además de calcular el conteo total de menciones, puedes ver cómo se distribuyen por mes, y así detectar cambios en las estrategias de tratamiento. Seleccione los principales medicamentos/estrategias y calcule la distribución de sus menciones por meses (o semanas). Primero, obtenga la lista de los 5 ID de UMLS principales para medicamentos y clases de medicamentos (también conocidas como estrategias de tratamiento), y luego use solo esas clases para trazar gráficos similares a los siguientes:
 
-![visualization](images/strat_1.png)
+![visualización](../../images/strat_1.png)
 
-![visualization](images/strat_2.png)
+![visualización](../../images/strat_2.png)
 
-## Milestone 7: Visualize Co-occurrence of Terms
+## Paso 7: Visualizar la co-ocurrencia de términos
 
-It is interesting to see which terms occur together within one paper, because it can give us an idea about relationships between, for example, diagnoses and medications, or symptoms and treatments. You should also be able to see which medications are often used together, and which symptoms occur together.
+Es interesante ver qué términos aparecen juntos en un artículo, porque nos puede dar una idea de las relaciones, por ejemplo, entre diagnósticos y medicamentos, o síntomas y tratamientos. También deberías poder ver qué medicamentos se usan juntos con frecuencia y qué síntomas ocurren juntos.
 
-You can use two types of diagrams for that:
+Puedes usar dos tipos de diagramas para eso:
 
-* **Sankey diagram** allows us to investigate relations between two types of terms, eg. diagnosis and treatment
-* **Chord diagram** helps to visualize co-occurrence of terms of the same type (eg. which medications are mentioned together)
+* **Diagrama de Sankey** nos permite investigar relaciones entre dos tipos de términos, por ejemplo, diagnostico y tratamiento
+* **Diagrama de cuerdas** ayuda a visualizar la concurrencia de términos del mismo tipo (por ejemplo, qué medicamentos se mencionan juntos)
 
-To plot both diagrams, we need to compute the co-occurrence matrix, which in the row i and column j contains the number of co-occurrences of terms i and j in the same abstract (one can notice that this matrix is symmetric).
+Para trazar ambos diagramas, necesitamos calcular la matriz de co-ocurrencia, que en la fila i y la columna j contiene el número de co-ocurrencias de los términos i y j en el mismo resumen (se puede notar que esta matriz es simétrica).
 
-To actually plot the diagrams, we can use the [Plotly](https://plotly.com/python/) graphics library. This process is well described [here](https://plotly.com/python/sankey-diagram/). For the Chord diagram, you can use [Holoviews](https://holoviews.org/)
+Para trazar los diagramas, podemos usar la biblioteca de gráficos [Plotly](https://plotly.com/python/). Este proceso está descrito [aquí](https://plotly.com/python/sankey-diagram/). Para el diagrama de cuerdas, puedes utilizar [Holoviews](https://holoviews.org/)
 
-![sankey diagram](images/sankey.png) | ![sankey diagram](images/chord.png)
+![Diagrama de Sankey](../../images/sankey.png) | ![Diagrama de cuerdas](../../images/chord.png)
 ----|----
 
-## Next steps
+## Próximos pasos
 
-If you want to learn more:
+Si quieres saber más:
 
-* MS Learn Learning Path: [Microsoft Azure AI Fundamentals: Explore natural language processing](https://docs.microsoft.com/learn/paths/explore-natural-language-processing/?WT.mc_id=academic-49822-dmitryso)
-* Read more about full-scale project on analyzing COVID dataset using CosmosDB/PowerBI/AzureML in [this blog post](https://soshnikov.com/science/analyzing-medical-papers-with-azure-and-text-analytics-for-health/)
-* If you are planning to use this approach in your research, cite this paper [arXiv:2110.15453](https://arxiv.org/abs/2110.15453)
+* Ruta de aprendizaje de MS Learn: [Microsoft Azure AI Fundamentals: exploración del procesamiento de lenguaje natural](https://docs.microsoft.com/learn/paths/explore-natural-language-processing/?WT.mc_id=academic-49822-dmitryso )
+* Obtén más información sobre el proyecto a gran escala sobre el análisis de conjuntos de datos de COVID mediante CosmosDB/PowerBI/AzureML en [esta publicación de blog](https://soshnikov.com/science/analyzing-medical-papers-with-azure-and-text-analytics-for-health/)
+* Si planeas utilizar esta propuesta en tu investigación, cita este artículo: [arXiv:2110.15453](https://arxiv.org/abs/2110.15453)
 
-## Practice
+## Práctica
 
-The knowledge extraction that we have performed in this workshop was possible thanks for Text Analytics for Health service, which did most of the job for us. For different knowledge domains, you would need to train your own NER neural network model, and for that you will also need a dataset. The [Custom Named Entity Recognition](https://docs.microsoft.com/azure/cognitive-services/language-service/custom-named-entity-recognition/overview/?WT.mc_id=academic-49822-dmitryso) service can help you do that. 
+La extracción de conocimiento que hemos realizado en este taller fue posible gracias al servicio Text Analytics for Health, que hizo la mayor parte del trabajo por nosotros. Para diferentes dominios de conocimiento, necesitará entrenar su propio modelo de red neuronal NER, y para eso también necesitará un conjunto de datos. El servicio [Custom Named Entity Recognition](https://docs.microsoft.com/azure/cognitive-services/language-service/custom-named-entity-recognition/overview/?WT.mc_id=academic-49822-dmitryso) puede ayudarte a hacer eso.
 
-However, the [Text Analytics Service](https://azure.microsoft.com/services/cognitive-services/text-analytics/?WT.mc_id=academic-49822-dmitryso) has some pre-built [entity extraction mechanism](https://docs.microsoft.com/azure/cognitive-services/language-service/named-entity-recognition/concepts/named-entity-categories/?WT.mc_id=academic-49822-dmitryso), as well as keyword extraction. As an additional challenge, experiment with text from a different problem domain, and see if you can extract some meaningful insights from them.
+Sin embargo, el [Servicio de Text Analytics](https://azure.microsoft.com/services/cognitive-services/text-analytics/?WT.mc_id=academic-49822-dmitryso) tiene un [mecanismo de extracción de entidades preconstruido](https://docs.microsoft.com/azure/cognitive-services/language-service/named-entity-recognition/concepts/named-entity-categories/?WT.mc_id=academic-49822-dmitryso), así como extracción de palabras clave. Como desafío adicional, experimenta con texto de un dominio de problema diferente y vea si puede extraer algunas ideas significativas de ellos.
 
-Things you can build:
+Cosas que puedes construir:
 
-* Analyze a blog or social network posts and get the idea of different topics that author is writing about. See how interests change over time, as well as the mood. You can use the blog of [Scott Hanselman](https://www.hanselman.com/) that goes back to [2002](https://www.hanselman.com/blog/archive/2002).
-* Analyze [COVID 19 twitter feed](https://github.com/thepanacealab/covid19_twitter) to see if you can extract changes in major topics on twitter. 
-* Analyze your e-mail archive to see how the topics you discuss and your mood change over time. Most e-mail clients allow you to export your e-mails to plain text or CSV format (here is an [example for Outloook](https://support.microsoft.com/office/import-and-export-outlook-email-contacts-and-calendar-92577192-3881-4502-b79d-c3bbada6c8ef/?WT.mc_id=academic-49822-dmitryso)).
+* Analiza las publicaciones de un blog o una red social y obtén una idea de los diferentes temas sobre los que escribe el autor. Vea cómo cambian los intereses con el tiempo, así como el estado de ánimo. Puede usar el blog de [Scott Hanselman](https://www.hanselman.com/) que se remonta a [2002](https://www.hanselman.com/blog/archive/2002).
+* Analiza el [Feed de Twitter de COVID 19](https://github.com/thepanacealab/covid19_twitter) para ver si puedes extraer cambios en los temas principales de Twitter.
+* Analiza tu archivo de correo electrónico para ver cómo los temas que discutes y tu estado de ánimo cambian con el tiempo. La mayoría de los clientes de correo electrónico le permiten exportar sus correos electrónicos a texto sin formato o formato CSV (aquí hay un [ejemplo para Outlook](https://support.microsoft.com/office/import-and-export-outlook-email-contacts-and-calendar-92577192-3881-4502-b79d-c3bbada6c8ef/?WT.mc_id=academic-49822-dmitryso)).
 
-Learn more about text analytics by following [this module](https://docs.microsoft.com/learn/modules/analyze-text-with-text-analytics-service/?WT.mc_id=academic-49822-dmitryso).
+Obtenga más información sobre análisis de texto siguiendo [este módulo](https://docs.microsoft.com/learn/modules/analyze-text-with-text-analytics-service/?WT.mc_id=academic-49822-dmitryso).
 
 ## Feedback
 
-Be sure to give [feedback about this workshop](https://forms.office.com/r/MdhJWMZthR)!
+Asegúrate de dejarnos tus [comentarios sobre este taller](https://forms.office.com/r/MdhJWMZthR).
 
-[Code of Conduct](../../CODE_OF_CONDUCT.md)
+[Código de Conducta](../../../../CODE_OF_CONDUCT.md)
